@@ -16,7 +16,7 @@ A lightweight, flexible Node.js utility for standardizing HTTP responses in Expr
 Install the package via npm:
 
 ```bash
-npm install httpreply
+npm i http-reply
 ```
 
 ## Usage
@@ -26,7 +26,7 @@ npm install httpreply
 Require the `HttpReply` class and use it in your Express or Fastify application.
 
 ```javascript
-const HttpReply = require("httpreply");
+const HttpReply = require("http-reply");
 
 // Express example
 const express = require("express");
@@ -50,7 +50,7 @@ You can create a centralized `HttpReply` instance with predefined configuration 
 Create a file named `responder.js`:
 
 ```javascript
-const HttpReply = require('httpreply');
+const HttpReply = require('http-reply');
 
 const reply = new HttpReply({
   includeTimestamp: true,
@@ -83,7 +83,7 @@ app.listen(3000, () => console.log("Server running on port 3000"));
 You can instantiate `HttpReply` with custom configuration options.
 
 ```javascript
-const HttpReply = require("httpreply");
+const HttpReply = require("http-reply");
 
 const reply = new HttpReply({
   includeTimestamp: true,
