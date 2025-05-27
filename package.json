@@ -1,6 +1,6 @@
 {
   "name": "http-reply",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A lightweight Node.js utility for sending consistent, standardized HTTP responses across your API endpoints",
   "main": "index.js",
   "scripts": {
