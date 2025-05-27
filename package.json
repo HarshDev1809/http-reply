@@ -10,7 +10,29 @@
     "type": "git",
     "url": "git+https://github.com/HarshDev1809/http-reply.git"
   },
-  "author": "",
+  "keywords": [
+    "http",
+    "response",
+    "express",
+    "fastify",
+    "api",
+    "http-response",
+    "nodejs",
+    "rest-api",
+    "middleware",
+    "error-handling",
+    "api-response",
+    "http-status",
+    "json-response",
+    "backend",
+    "server",
+    "web-server",
+    "response-handler",
+    "node",
+    "utility",
+    "http-utilities"
+  ],
+  "author": "Harsh Dev",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/HarshDev1809/http-reply/issues"
