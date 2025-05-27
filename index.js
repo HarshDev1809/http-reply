@@ -60,26 +60,47 @@ class HttpReply {
       }
     }
 
-    // Cleanup
+    // Cleanup unwanted fields
     if (!this.config.includeCode) delete response.code;
     if (!this.config.includeMessage) delete response.message;
     if (!this.config.includeError) delete response.error;
     if (!this.config.includeMetaData) delete response.metaData;
 
-    // Custom fields
+    // Merge customFields and extraFields
     Object.assign(response, this.config.customFields, extraFields);
 
-    // Send using adapter or default behavior
+    // Handle stringify
+    let payload = response;
+    if (this.config.stringify) {
+      try {
+        payload = JSON.stringify(response);
+      } catch (err) {
+        if (this.config.enableLogging) {
+          ErrorLog(`Failed to stringify response: ${err.message}`, "[HttpReply Error]");
+        }
+        throw err;
+      }
+    }
+
+    // Send response via adapter if provided
     if (typeof this.config.adapter === "function") {
-      return this.config.adapter(res, statusCode, response);
+      return this.config.adapter(res, statusCode, payload);
     }
 
+    // Express style response
     if (typeof res.status === "function" && typeof res.json === "function") {
-      return res.status(statusCode).json(response);
+      if (this.config.stringify) {
+        return res.status(statusCode).type("application/json").send(payload);
+      }
+      return res.status(statusCode).json(payload);
     }
 
+    // Fastify style response
     if (typeof res.code === "function" && typeof res.send === "function") {
-      return res.code(statusCode).send(response);
+      if (this.config.stringify) {
+        return res.code(statusCode).type("application/json").send(payload);
+      }
+      return res.code(statusCode).send(payload);
     }
   }
 
@@ -94,313 +115,158 @@ class HttpReply {
       extra = {},
     }
   ) {
-    const body = {
-      message,
-      data,
-      metaData,
-      error,
-    };
+    const body = { message, data, metaData, error };
     return this._sendResponse(res, body, code, extra);
   }
 
   success(
     res,
-    {
-      message = "Success",
-      data = null,
-      metaData = {},
-      code = 200,
-      extra = {},
-    } = {}
+    { message = "Success", data = null, metaData = {}, code = 200, extra = {} } = {}
   ) {
-    const body = {
-      message,
-      data,
-      metaData,
-    };
+    const body = { message, data, metaData };
     return this._sendResponse(res, body, code, extra);
   }
 
   accepted(
     res,
-    {
-      message = "Accepted",
-      data = null,
-      metaData = {},
-      code = 202,
-      extra = {},
-    } = {}
+    { message = "Accepted", data = null, metaData = {}, code = 202, extra = {} } = {}
   ) {
-    const body = {
-      message,
-      data,
-      metaData,
-    };
+    const body = { message, data, metaData };
     return this._sendResponse(res, body, code, extra);
   }
 
   noContent(res, { message = "No Content", code = 204, extra = {} } = {}) {
-    // 204 responses should not have a body, but we keep message for logs or adapters
-    return this._sendResponse(res, {}, code, extra);
+    // No content: Send no body
+    if (typeof this.config.adapter === "function") {
+      return this.config.adapter(res, code, null);
+    }
+
+    if (typeof res.status === "function" && typeof res.send === "function") {
+      return res.status(code).send();
+    }
+
+    if (typeof res.code === "function" && typeof res.send === "function") {
+      return res.code(code).send();
+    }
   }
 
   conflict(
     res,
-    {
-      message = "Conflict",
-      error = null,
-      metaData = {},
-      code = 409,
-      extra = {},
-    } = {}
+    { message = "Conflict", error = null, metaData = {}, code = 409, extra = {} } = {}
   ) {
-    const body = {
-      message,
-      error,
-      metaData,
-    };
+    const body = { message, error, metaData };
     return this._sendResponse(res, body, code, extra);
   }
 
   tooManyRequests(
     res,
-    {
-      message = "Too Many Requests",
-      error = null,
-      metaData = {},
-      code = 429,
-      extra = {},
-    } = {}
+    { message = "Too Many Requests", error = null, metaData = {}, code = 429, extra = {} } = {}
   ) {
-    const body = {
-      message,
-      error,
-      metaData,
-    };
+    const body = { message, error, metaData };
     return this._sendResponse(res, body, code, extra);
   }
 
   badRequest(
     res,
-    {
-      message = "Bad Request",
-      error = null,
-      metaData = {},
-      code = 400,
-      extra = {},
-    } = {}
+    { message = "Bad Request", error = null, metaData = {}, code = 400, extra = {} } = {}
   ) {
-    const body = {
-      message,
-      error,
-      metaData,
-    };
+    const body = { message, error, metaData };
     return this._sendResponse(res, body, code, extra);
   }
 
   notImplemented(
     res,
-    {
-      message = "Not Implemented",
-      error = null,
-      metaData = {},
-      code = 501,
-      extra = {},
-    } = {}
+    { message = "Not Implemented", error = null, metaData = {}, code = 501, extra = {} } = {}
   ) {
-    const body = {
-      message,
-      error,
-      metaData,
-    };
+    const body = { message, error, metaData };
     return this._sendResponse(res, body, code, extra);
   }
 
   serviceUnavailable(
     res,
-    {
-      message = "Service Unavailable",
-      error = null,
-      metaData = {},
-      code = 503,
-      extra = {},
-    } = {}
+    { message = "Service Unavailable", error = null, metaData = {}, code = 503, extra = {} } = {}
   ) {
-    const body = {
-      message,
-      error,
-      metaData,
-    };
+    const body = { message, error, metaData };
     return this._sendResponse(res, body, code, extra);
   }
 
   error(
     res,
-    {
-      message = "Internal Server Error",
-      error = null,
-      metaData = {},
-      code = 500,
-      extra = {},
-    } = {}
+    { message = "Internal Server Error", error = null, metaData = {}, code = 500, extra = {} } = {}
   ) {
-    const body = {
-      message,
-      error,
-      metaData,
-    };
+    const body = { message, error, metaData };
     return this._sendResponse(res, body, code, extra);
   }
 
   rejected(
     res,
-    {
-      message = "Request Rejected",
-      error = null,
-      metaData = {},
-      code = 400,
-      extra = {},
-    } = {}
+    { message = "Request Rejected", error = null, metaData = {}, code = 400, extra = {} } = {}
   ) {
-    const body = {
-      message,
-      error,
-      metaData,
-    };
+    const body = { message, error, metaData };
     return this._sendResponse(res, body, code, extra);
   }
 
   created(
     res,
-    {
-      message = "Resource Created Successfully",
-      data = null,
-      metaData = {},
-      code = 201,
-      extra = {},
-    } = {}
+    { message = "Resource Created Successfully", data = null, metaData = {}, code = 201, extra = {} } = {}
   ) {
-    const body = {
-      message,
-      data,
-      metaData,
-    };
+    const body = { message, data, metaData };
     return this._sendResponse(res, body, code, extra);
   }
 
   forbidden(
     res,
-    {
-      message = "Forbidden",
-      error = null,
-      metaData = {},
-      code = 403,
-      extra = {},
-    } = {}
+    { message = "Forbidden", error = null, metaData = {}, code = 403, extra = {} } = {}
   ) {
-    const body = {
-      message,
-      error,
-      metaData,
-    };
+    const body = { message, error, metaData };
     return this._sendResponse(res, body, code, extra);
   }
 
-  // Bonus: Unauthorized
   unauthorized(
     res,
-    {
-      message = "Unauthorized",
-      error = null,
-      metaData = {},
-      code = 401,
-      extra = {},
-    } = {}
+    { message = "Unauthorized", error = null, metaData = {}, code = 401, extra = {} } = {}
   ) {
-    const body = {
-      message,
-      error,
-      metaData,
-    };
+    const body = { message, error, metaData };
     return this._sendResponse(res, body, code, extra);
   }
 
-  // Bonus: Not Found
   notFound(
     res,
-    {
-      message = "Not Found",
-      error = null,
-      metaData = {},
-      code = 404,
-      extra = {},
-    } = {}
+    { message = "Not Found", error = null, metaData = {}, code = 404, extra = {} } = {}
   ) {
-    const body = {
-      message,
-      error,
-      metaData,
-    };
+    const body = { message, error, metaData };
     return this._sendResponse(res, body, code, extra);
   }
-
-  static success(res, args = {}) {
-    return new HttpReply().success(res, args);
-  }
-
-  static error(res, args = {}) {
-    return new HttpReply().error(res, args);
-  }
-
-  static rejected(res, args = {}) {
-    return new HttpReply().rejected(res, args);
-  }
-
-  static created(res, args = {}) {
-    return new HttpReply().created(res, args);
-  }
-
-  static forbidden(res, args = {}) {
-    return new HttpReply().forbidden(res, args);
-  }
-
-  static unauthorized(res, args = {}) {
-    return new HttpReply().unauthorized(res, args);
-  }
-
-  static notFound(res, args = {}) {
-    return new HttpReply().notFound(res, args);
-  }
-
-  static response(res, args = {}) {
-    return new HttpReply().response(res, args);
-  }
-
-  static accepted(res, args = {}) {
-    return new HttpReply().accepted(res, args);
-  }
-
-  static noContent(res, args = {}) {
-    return new HttpReply().noContent(res, args);
-  }
-
-  static conflict(res, args = {}) {
-    return new HttpReply().conflict(res, args);
-  }
-
-  static tooManyRequests(res, args = {}) {
-    return new HttpReply().tooManyRequests(res, args);
-  }
-
-  static badRequest(res, args = {}) {
-    return new HttpReply().badRequest(res, args);
-  }
-
-  static notImplemented(res, args = {}) {
-    return new HttpReply().notImplemented(res, args);
-  }
-
-  static serviceUnavailable(res, args = {}) {
-    return new HttpReply().serviceUnavailable(res, args);
-  }
 }
+
+const methods = [
+  "success",
+  "error",
+  "rejected",
+  "created",
+  "forbidden",
+  "unauthorized",
+  "notFound",
+  "response",
+  "accepted",
+  "noContent",
+  "conflict",
+  "tooManyRequests",
+  "badRequest",
+  "notImplemented",
+  "serviceUnavailable",
+];
+
+methods.forEach((method) => {
+  HttpReply[method] = function (res, args = {}) {
+    const instance = new HttpReply();
+    // For noContent, only pass res and args as message/code object
+    if (method === "noContent") {
+      return instance.noContent(res, args);
+    }
+    return instance[method](res, args);
+  };
+});
+
+module.exports = HttpReply;
+
