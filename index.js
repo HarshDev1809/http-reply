@@ -1,4 +1,4 @@
-import { ErrorLog } from "./logger";
+const { ErrorLog } = require("./logger");
 
 function isResponseLike(res) {
   return (

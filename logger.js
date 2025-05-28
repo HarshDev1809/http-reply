@@ -1,12 +1,12 @@
-export const Log = (message, label = 'INFO') => {
+ const Log = (message, label = 'INFO') => {
   console.log(`[${label}] ${formatMessage(message)}`);
 };
 
-export const ErrorLog = (error, label = 'ERROR') => {
+ const ErrorLog = (error, label = 'ERROR') => {
   console.error(`\x1b[31m[${label}] ${formatMessage(error)}\x1b[0m`);
 };
 
-export const WarnLog = (warning, label = 'WARN') => {
+ const WarnLog = (warning, label = 'WARN') => {
   console.warn(`\x1b[33m[${label}] ${formatMessage(warning)}\x1b[0m`);
 };
 
@@ -21,3 +21,7 @@ const formatMessage = (msg) => {
   }
   return msg;
 };
+
+module.exports = {
+  Log, ErrorLog, WarnLog
+}
