@@ -1,12 +1,11 @@
 {
   "name": "http-reply",
-  "version": "0.2.2",
+  "version": "1.0.0",
   "description": "A lightweight Node.js utility for sending consistent, standardized HTTP responses across your API endpoints",
-  "main": "./dist/index.js",              
-  "module": "./dist/cjs/index.cjs",             
-  "types": "./dist/index.d.ts",            
-  "type": "module",                        
-
+  "main": "./dist/index.js",
+  "module": "./dist/cjs/index.cjs",
+  "types": "./dist/index.d.ts",
+  "type": "module",
   "exports": {
     ".": {
       "import": "./dist/index.js",
@@ -14,24 +13,22 @@
       "types": "./dist/index.d.ts"
     }
   },
-
   "files": [
-    "dist","README.md","LICENSE"
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
-
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "postbuild" : "node makeExportFile.js",
+    "postbuild": "node makeExportFile.js",
     "clean": "rm -rf dist",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-
   "repository": {
     "type": "git",
     "url": "https://github.com/HarshDev1809/http-reply.git"
   },
-
   "keywords": [
     "http",
     "response",
@@ -54,14 +51,12 @@
     "utility",
     "http-utilities"
   ],
-
   "author": "Harsh Dev",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/HarshDev1809/http-reply/issues"
   },
   "homepage": "https://github.com/HarshDev1809/http-reply#readme",
-
   "devDependencies": {
     "tsup": "^8.5.0",
     "typescript": "^5.8.3"
